@@ -156,8 +156,8 @@ class RecordMetadata(db.Model):
 
 
 # FIXME add after_delete
-listen(Collection, 'after_insert', new_collection)
-listen(Collection, 'after_update', new_collection)
+# listen(Collection, 'after_insert', new_collection)
+# listen(Collection, 'after_update', new_collection)
 
 
 __all__ = (
