@@ -21,7 +21,6 @@
 
 import six
 from invenio_celery import celery
-from invenio_ext.es import es
 from invenio_search.api import Query
 from invenio_search.walkers.elasticsearch import ElasticSearchDSL
 
@@ -43,6 +42,7 @@ def get_record_index(record):
 @celery.task
 def index_record(recid, json):
     """Index a record in elasticsearch."""
+    from invenio_ext.es import es
     before_record_index.send(recid, json=json)
     index = get_record_index(json) or cfg['SEARCH_ELASTIC_DEFAULT_INDEX']
     es.index(
@@ -56,6 +56,7 @@ def index_record(recid, json):
 @celery.task
 def index_collection_percolator(name, dbquery):
     """Create an elasticsearch percolator for a given query."""
+    from invenio_ext.es import es
     indices = set(cfg["SEARCH_ELASTIC_COLLECTION_INDEX_MAPPING"].values())
     indices.add(cfg['SEARCH_ELASTIC_DEFAULT_INDEX'])
     for index in indices:
