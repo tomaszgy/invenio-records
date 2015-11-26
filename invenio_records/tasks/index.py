@@ -27,7 +27,7 @@ from invenio_search.walkers.elasticsearch import ElasticSearchDSL
 
 from invenio.base.globals import cfg
 
-from ..signals import before_record_index
+from ..signals import after_record_index, before_record_index
 
 
 def get_record_index(record):
@@ -45,13 +45,14 @@ def index_record(recid, json):
     """Index a record in elasticsearch."""
     before_record_index.send(recid, json=json)
     index = get_record_index(json) or cfg['SEARCH_ELASTIC_DEFAULT_INDEX']
-    es.index(
+    index_result = es.index(
         index=index,
         doc_type='record',
         body=json,
         id=recid
     )
-
+    if index_result['_shards']['successful'] > 0:
+        after_record_index.send(recid, json=json)
 
 @celery.task
 def index_collection_percolator(name, dbquery):
