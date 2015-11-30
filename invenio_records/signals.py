@@ -87,3 +87,6 @@ Example subscriber
         listener
     )
 """
+
+after_record_index = _signals.signal('after-record-index')
+"""Signal sent after a record is indexed."""
