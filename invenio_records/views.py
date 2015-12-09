@@ -68,13 +68,30 @@ def request_record(f):
         from .api import get_record
         from .access import check_user_can_view_record
         from .models import Record as Bibrec
+        from invenio_records.tasks.index import get_record_index
+        from invenio_records.api import Record
+        from invenio.base.globals import cfg
+        from invenio_ext.es import es
+        from elasticsearch import TransportError
+
         # ensure recid to be integer
         recid = int(recid)
         g.bibrec = Bibrec.query.get(recid)
 
-        g.record = record = get_record(recid)
-        if record is None:
+        # get record from db and the one from es
+        db_record = get_record(recid)
+        if db_record is None:
             abort(404)
+
+        index = get_record_index(db_record) or \
+                   cfg['SEARCH_ELASTIC_DEFAULT_INDEX']
+
+        try:
+            es_record = es.get(index=index, doc_type='record', id=recid)
+        except TransportError:
+            abort(404)
+
+        g.record = record = Record(data=es_record['_source'])
 
         g.collection = collection = Collection.query.filter(
             Collection.name.in_(record['_collections'])).first()
