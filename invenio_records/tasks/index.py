@@ -43,8 +43,8 @@ def get_record_index(record):
 def index_record(recid, json):
     """Index a record in elasticsearch."""
     from invenio_ext.es import es
-    before_record_index.send(recid, json=json)
     index = get_record_index(json) or cfg['SEARCH_ELASTIC_DEFAULT_INDEX']
+    before_record_index.send(recid, json=json, index=index)
     index_result = es.index(
         index=index,
         doc_type='record',
