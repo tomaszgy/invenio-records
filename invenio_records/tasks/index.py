@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015 CERN.
+# Copyright (C) 2015, 2016 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -43,8 +43,8 @@ def get_record_index(record):
 def index_record(recid, json):
     """Index a record in elasticsearch."""
     from invenio_ext.es import es
-    before_record_index.send(recid, json=json, index=index)
     index = get_record_index(json) or cfg['SEARCH_ELASTIC_DEFAULT_INDEX']
+    before_record_index.send(recid, json=json, index=index)
     index_result = es.index(
         index=index,
         doc_type='record',
@@ -53,6 +53,7 @@ def index_record(recid, json):
     )
     if index_result['_shards']['successful'] > 0:
         after_record_index.send(recid, json=json)
+
 
 @celery.task
 def index_collection_percolator(name, dbquery):
